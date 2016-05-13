@@ -32,6 +32,21 @@ class wechat_bot(itchat.client):
         self.own = None
         self.config_mutex = threading.Lock()
 
+    def get_QR(self, uuid=None):
+        BASE_URL = 'https://login.weixin.qq.com'
+        if uuid == None:
+            uuid = self.uuid
+        url = '%s/qrcode/%s' % (BASE_URL, uuid)
+        r = self.s.get(url, stream = True)
+        QR_DIR = 'QR.jpg'
+        with open(QR_DIR, 'wb') as f: f.write(r.content)
+        try:
+            os.startfile(QR_DIR)
+        except:
+            pass
+        print('\n'+url)
+        return True
+
     def load_config(self):
         with open('config.json') as f:
             content = json.load(f)
