@@ -130,9 +130,9 @@ class wechat_bot(itchat.client):
         while 1:
             try:
                 msg = self.storageClass.msgList.pop()
+                self.reply(msg)
             except:
                 pass
-            self.reply(msg)
             time.sleep(0.3)
 
 if __name__ == '__main__':
