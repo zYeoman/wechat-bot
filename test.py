@@ -9,8 +9,9 @@ config = wechat.config
 for plugin in config['plugins']:
     plugin['module'].test()
 
-test = [u'呵呵', 'reload config']
+test = ['test', 'reload config', 'update update!']
 
 for t in test:
     msg = {'Text': t}
-    wechat.text_reply(msg, local=True)
+    print('Text: {}'.format(t))
+    wechat.reply(msg, local=True)

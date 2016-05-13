@@ -78,14 +78,10 @@ class wechat_bot(itchat.client):
         else:
             return self.send_msg(text, toUserName)
 
-    def reply(self):
-        try:
-            msg = self.storageClass.msgList.pop()
-        except:
+    def reply(self, msg, local=False):
+        if msg.get('Type') != 'Text' and not local:
             return False
-        if msg.get('Type') != 'Text':
-            return False
-        if not self.own:
+        if not self.own and not local:
             self.own = msg['Text']
             return True
         if msg.get('Text') == 'reload config':
@@ -103,8 +99,8 @@ class wechat_bot(itchat.client):
                 msg['Text'] = msg['Text'][len(self.config['name']):]
                 self.text_reply(msg)
         else:
-            self.text_reply(msg)
-        self.text_reply(msg, 'listener')
+            self.text_reply(msg, local=local)
+        self.text_reply(msg, 'listener', local=local)
         return True
 
     def update(self):
@@ -116,7 +112,11 @@ class wechat_bot(itchat.client):
     def run(self):
         print('Start auto replying')
         while 1:
-            self.reply()
+            try:
+                msg = self.storageClass.msgList.pop()
+            except:
+                pass
+            self.reply(msg)
             time.sleep(0.3)
 
 if __name__ == '__main__':
