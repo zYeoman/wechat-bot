@@ -105,6 +105,7 @@ class wechat_bot(itchat.client):
 
     def update(self):
         os.system('git pull')
+        os.system('git rebase origin/master')
         self.config_mutex.acquire()
         self.config = self.load_config()
         self.config_mutex.release()
