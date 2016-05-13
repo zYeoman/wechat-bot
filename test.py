@@ -1,12 +1,9 @@
 # -*- encoding=utf-8 -*-
 
 import wechat_bot
-from pprint import pprint
 
 wechat = wechat_bot.wechat_bot()
-config = wechat.load_config()
-
-pprint(config)
+config = wechat.config
 
 
 for plugin in config['plugins']:
