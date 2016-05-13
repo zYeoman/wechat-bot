@@ -7,7 +7,7 @@ A simple wechat-bot based on  [ItChat](https://github.com/littlecodersh/ItChat)
 
 ## Config
 
-```json
+```js
 {
     "name":"r2",// name of the bot
     "plugins":[
