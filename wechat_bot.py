@@ -1,3 +1,5 @@
+# -*- encoding:utf-8 -*-
+
 import itchat
 import json
 import re
