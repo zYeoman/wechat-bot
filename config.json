@@ -5,7 +5,7 @@
             "name":"translate",
             "description":"Translate all single english words.",
             "regex":"^[a-zA-Z-]+$",
-            "type": "listener"
+            "type": "response"
         },
         {
             "name":"sayHello",
