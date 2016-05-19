@@ -2,7 +2,7 @@
 
 import wechat_bot
 
-wechat = wechat_bot.wechat_bot()
+wechat = wechat_bot.wechat_bot(local=True)
 config = wechat.config
 
 
@@ -14,4 +14,4 @@ test = ['test', 'reload config', 'update update!']
 for t in test:
     msg = {'Text': t}
     print('Text: {}'.format(t))
-    wechat.reply(msg, local=True)
+    wechat.reply(msg)

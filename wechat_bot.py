@@ -26,11 +26,12 @@ class response:
 class wechat_bot(itchat.client):
     """bot for wechat"""
 
-    def __init__(self):
+    def __init__(self, local=False):
         itchat.client.__init__(self)
         self._config = self.load_config()
         self.own = None
         self.config_mutex = threading.Lock()
+        self.local = local
 
     def get_QR(self, uuid=None):
         BASE_URL = 'https://login.weixin.qq.com'
@@ -77,7 +78,7 @@ class wechat_bot(itchat.client):
         os.system('git pull --rebase')
         self.reload_config()
 
-    def text_reply(self, msg, m='response', local=False):
+    def text_reply(self, msg, m='response'):
         local_config = self.config
         for plugin in local_config['plugins']:
             if plugin.get('type', '') == m:
@@ -85,16 +86,11 @@ class wechat_bot(itchat.client):
                 r = regex.match(msg['Text'].strip())
                 if r:
                     response = plugin['module'].get_response(r.string)
-                    if local:
-                        print(response)
-                    else:
-                        print({'Text': response,
+                    self.send({'Text': response,
                                'ToUserName': msg['FromUserName']})
-                        self.send({'Text': response,
-                                   'ToUserName': msg['FromUserName']})
         return True
 
-    def file_reply(self, msg, local=False):
+    def file_reply(self, msg):
         local_config = self.config
         filepath = os.path.join('files', msg['FileName'])
         msg['Text'](filepath)
@@ -102,17 +98,15 @@ class wechat_bot(itchat.client):
         for plugin in local_config['plugins']:
             if plugin.get('type') == 'file':
                 response = plugin['module'].get_response(msg)
-                if local:
-                    print(response)
-                else:
-                    print({'Text': response,
+                self.send({'Text': response,
                            'ToUserName': msg['FromUserName']})
-                    self.send({'Text': response,
-                               'ToUserName': msg['FromUserName']})
 
     def send(self, send_msg):
         text = send_msg['Text']
         toUserName = send_msg['ToUserName']
+        if self.local:
+            print("Send to {}: {}".format(text, toUserName))
+            return True
         if text is None:
             return False
         if text[:5] == '@fil@':
@@ -124,7 +118,7 @@ class wechat_bot(itchat.client):
         else:
             return self.send_msg(text, toUserName)
 
-    def reply(self, msg, local=False):
+    def reply(self, msg):
         if msg.get('Type') == 'Init':
             if not self.own:
                 self.own = msg['Text']
@@ -148,10 +142,10 @@ class wechat_bot(itchat.client):
                     msg['Text'] = msg['Text'][len(self.config['name']):]
                     self.text_reply(msg)
             else:
-                self.text_reply(msg, local=local)
-            self.text_reply(msg, 'listener', local=local)
+                self.text_reply(msg)
+            self.text_reply(msg, 'listener')
         elif msg.get('Type') == 'Attachment':
-            self.file_reply(msg, local=local)
+            self.file_reply(msg)
         return True
 
     def run(self):
