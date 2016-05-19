@@ -28,7 +28,7 @@ class wechat_bot(itchat.client):
 
     def __init__(self):
         itchat.client.__init__(self)
-        self.config = self.load_config()
+        self._config = self.load_config()
         self.own = None
         self.config_mutex = threading.Lock()
 
@@ -48,6 +48,13 @@ class wechat_bot(itchat.client):
         print('\n' + url)
         return True
 
+    @property
+    def config(self):
+        self.config_mutex.acquire()
+        local_config = self._config.copy()
+        self.config_mutex.release()
+        return local_config
+
     def load_config(self):
         with open('config.json') as f:
             content = json.load(f)
@@ -61,10 +68,17 @@ class wechat_bot(itchat.client):
         pprint(content)
         return content
 
-    def text_reply(self, msg, m='response', local=False):
+    def reload_config(self):
         self.config_mutex.acquire()
-        local_config = self.config.copy()
+        self._config = self.load_config()
         self.config_mutex.release()
+
+    def update(self):
+        os.system('git pull --rebase')
+        self.reload_config()
+
+    def text_reply(self, msg, m='response', local=False):
+        local_config = self.config
         for plugin in local_config['plugins']:
             if plugin.get('type', '') == m:
                 regex = plugin['regex']
@@ -79,6 +93,22 @@ class wechat_bot(itchat.client):
                         self.send({'Text': response,
                                    'ToUserName': msg['FromUserName']})
         return True
+
+    def file_reply(self, msg, local=False):
+        local_config = self.config
+        filepath = os.path.join('files', msg['FileName'])
+        msg['Text'](filepath)
+        msg['Text'] = filepath
+        for plugin in local_config['plugins']:
+            if plugin.get('type') == 'file':
+                response = plugin['module'].get_response(msg)
+                if local:
+                    print(response)
+                else:
+                    print({'Text': response,
+                           'ToUserName': msg['FromUserName']})
+                    self.send({'Text': response,
+                               'ToUserName': msg['FromUserName']})
 
     def send(self, send_msg):
         text = send_msg['Text']
@@ -95,13 +125,14 @@ class wechat_bot(itchat.client):
             return self.send_msg(text, toUserName)
 
     def reply(self, msg, local=False):
-        if msg.get('Type') != 'Text' and not local:
-            return False
-        if not self.own and not local:
-            self.own = msg['Text']
-            return True
+        if msg.get('Type') == 'Init':
+            if not self.own:
+                self.own = msg['Text']
+                return True
+            else:
+                return False
         if msg.get('Text') == 'reload config':
-            self.config = self.load_config()
+            self.reload_config()
             return True
         if msg.get('Text') == 'update update!':
             threading.Thread(target=self.update, args=()).start()
@@ -109,32 +140,27 @@ class wechat_bot(itchat.client):
         if msg.get('ToUserName') == 'filehelper' or \
                 msg.get('FromUserName') == self.own:
             msg['FromUserName'] = 'filehelper'
-        if '@@' in msg.get('FromUserName'):
-            print('Group!  {}  {}'.format(msg['Text'], msg['FromUserName']))
-            if msg.get('Text').startswith(self.config['name']):
-                msg['Text'] = msg['Text'][len(self.config['name']):]
-                self.text_reply(msg)
-        else:
-            self.text_reply(msg, local=local)
-        self.text_reply(msg, 'listener', local=local)
+        if msg.get('Type') == 'Text':
+            if '@@' in msg.get('FromUserName'):
+                print('Group!  {}  {}'.format(
+                    msg['Text'], msg['FromUserName']))
+                if msg.get('Text').startswith(self.config['name']):
+                    msg['Text'] = msg['Text'][len(self.config['name']):]
+                    self.text_reply(msg)
+            else:
+                self.text_reply(msg, local=local)
+            self.text_reply(msg, 'listener', local=local)
+        elif msg.get('Type') == 'Attachment':
+            self.file_reply(msg, local=local)
         return True
-
-    def update(self):
-        os.system('git pull')
-        os.system('git rebase origin/master')
-        self.config_mutex.acquire()
-        self.config = self.load_config()
-        self.config_mutex.release()
 
     def run(self):
         print('Start auto replying')
         while 1:
-            try:
+            if self.storageClass.msgList:
                 msg = self.storageClass.msgList.pop()
                 self.reply(msg)
-            except:
-                pass
-            time.sleep(0.3)
+                time.sleep(0.3)
 
 if __name__ == '__main__':
     bot = wechat_bot()
