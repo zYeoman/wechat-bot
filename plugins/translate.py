@@ -22,7 +22,7 @@ def get_iciba(msg):
     return result
 
 
-def get_response(msg, more=False):
+def get_response(msg, send=None, more=False):
     meanings = get_iciba(msg.lower().strip())
     content = meanings["symbols"][0]
     result = u"UK: /{}/; USA: /{}/\n".format(content.get("ph_en", ""),

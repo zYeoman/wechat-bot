@@ -65,7 +65,8 @@ class wechat_bot(itchat.client):
             else:
                 plugin['module'] = __import__('plugins.' + plugin['name'],
                                               fromlist=plugin['name'])
-            plugin['regex'] = re.compile(plugin['regex'])
+            if plugin['regex']:
+                plugin['regex'] = re.compile(plugin['regex'])
         pprint(content)
         return content
 
@@ -85,7 +86,8 @@ class wechat_bot(itchat.client):
                 regex = plugin['regex']
                 r = regex.match(msg['Text'].strip())
                 if r:
-                    response = plugin['module'].get_response(r.string)
+                    response = plugin['module'].get_response(r.string,
+                                                             self.send)
                     self.send({'Text': response,
                                'ToUserName': msg['FromUserName']})
         return True
@@ -97,7 +99,7 @@ class wechat_bot(itchat.client):
         msg['Text'] = filepath
         for plugin in local_config['plugins']:
             if plugin.get('type') == 'file':
-                response = plugin['module'].get_response(msg)
+                response = plugin['module'].get_response(msg, self.send)
                 self.send({'Text': response,
                            'ToUserName': msg['FromUserName']})
 
