@@ -8,6 +8,11 @@ import time
 import threading
 from pprint import pprint
 
+import logging
+
+_DebugLevel = logging.INFO
+logging.basicConfig(level=logging.INFO)
+
 # ToUserName = "filehelper" 文件传输助手
 
 
@@ -65,7 +70,7 @@ class wechat_bot(itchat.client):
             else:
                 plugin['module'] = __import__('plugins.' + plugin['name'],
                                               fromlist=plugin['name'])
-            if plugin['regex']:
+            if plugin.get('regex'):
                 plugin['regex'] = re.compile(plugin['regex'])
         pprint(content)
         return content
@@ -94,14 +99,17 @@ class wechat_bot(itchat.client):
 
     def file_reply(self, msg):
         local_config = self.config
-        filepath = os.path.join('files', msg['FileName'])
+        if not os.path.isdir('files'):
+            os.mkdir('files')
+        filepath = u'{}{}{}'.format('files', os.sep, msg['FileName'])
         msg['Text'](filepath)
         msg['Text'] = filepath
         for plugin in local_config['plugins']:
             if plugin.get('type') == 'file':
                 response = plugin['module'].get_response(msg, self.send)
-                self.send({'Text': response,
-                           'ToUserName': msg['FromUserName']})
+                if response:
+                    self.send({'Text': response,
+                               'ToUserName': msg['FromUserName']})
 
     def send(self, send_msg):
         text = send_msg['Text']
@@ -147,7 +155,7 @@ class wechat_bot(itchat.client):
                 self.text_reply(msg)
             self.text_reply(msg, 'listener')
         elif msg.get('Type') == 'Attachment':
-            self.file_reply(msg)
+            threading.Thread(target=self.file_reply, args=(msg,)).start()
         return True
 
     def run(self):
@@ -156,6 +164,7 @@ class wechat_bot(itchat.client):
             if self.storageClass.msgList:
                 msg = self.storageClass.msgList.pop()
                 self.reply(msg)
+            else:
                 time.sleep(0.3)
 
 if __name__ == '__main__':

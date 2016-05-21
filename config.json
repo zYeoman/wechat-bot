@@ -13,6 +13,11 @@
             "regex":"^(Hello|Hi)$",
             "type":"response",
             "response":"Hello!"
+        },
+        {
+            "name":"googleDrive",
+            "description":"save all file in googleDrive",
+            "type":"file"
         }
     ]
 }
