@@ -96,3 +96,7 @@ def get_response(msg, send=None, more=False):
         msg['Text'],
         send, )).start()
     return None
+
+
+def test():
+    print("googleDrive OK")

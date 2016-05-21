@@ -92,7 +92,9 @@ class wechat_bot(itchat.client):
                 r = regex.match(msg['Text'].strip())
                 if r:
                     response = plugin['module'].get_response(r.string,
-                                                             self.send)
+                                                             self.send,
+                                                             msg['FromUserName']
+                                                             )
                     self.send({'Text': response,
                                'ToUserName': msg['FromUserName']})
         return True
@@ -114,8 +116,8 @@ class wechat_bot(itchat.client):
     def send(self, send_msg):
         text = send_msg['Text']
         toUserName = send_msg['ToUserName']
+        print(u"Send to {1}: {0}".format(text, toUserName))
         if self.local:
-            print("Send to {}: {}".format(text, toUserName))
             return True
         if text is None:
             return False

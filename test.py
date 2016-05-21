@@ -9,9 +9,9 @@ config = wechat.config
 for plugin in config['plugins']:
     plugin['module'].test()
 
-test = ['test', 'reload config', 'update update!']
+test = ['test', 'reloadconfig', 'updateupdate!', u'测试.']
 
 for t in test:
-    msg = {'Text': t}
-    print('Text: {}'.format(t))
+    msg = {'Text': t, 'FromUserName': '@dajflsdkfjs', 'Type': 'Text'}
+    print(u'Text: {}'.format(t))
     wechat.reply(msg)
