@@ -34,7 +34,7 @@ class wechat_bot(itchat.client):
     def __init__(self, local=False):
         itchat.client.__init__(self)
         self._config = self.load_config()
-        self.own = None
+        self.user = None
         self.config_mutex = threading.Lock()
         self.local = local
 
@@ -117,7 +117,9 @@ class wechat_bot(itchat.client):
     def send(self, send_msg):
         text = send_msg['Text']
         toUserName = send_msg['ToUserName']
-        print(u"Send to {1}: {0}".format(text, toUserName))
+        nickName = self.storageClass.find_nickname(toUserName)
+        print(u"Send to {1}: {0}".format(
+            text, nickName if nickName else toUserName))
         if self.local:
             return True
         if text is None:
@@ -133,24 +135,29 @@ class wechat_bot(itchat.client):
 
     def reply(self, msg):
         if msg.get('Type') == 'Init':
-            if not self.own:
-                self.own = msg['Text']
+            if not self.user:
+                self.user = self.storageClass.userName
                 return True
             else:
                 return False
-        if msg.get('Text') == 'reload config':
-            self.reload_config()
-            return True
-        if msg.get('Text') == 'update update!':
-            threading.Thread(target=self.update, args=()).start()
-            return True
         if msg.get('ToUserName') == 'filehelper' or \
-                msg.get('FromUserName') == self.own:
+                msg.get('FromUserName') == self.user:
             msg['FromUserName'] = 'filehelper'
+        nickName = self.storageClass.find_nickname(msg.get('FromUserName'))
         if msg.get('Type') == 'Text':
+            print(u'Receive from {1}:{0}'.format(
+                msg.get('Text'),
+                nickName if nickName else msg.get('FromUserName')))
+            if msg.get('Text') == 'reload config':
+                self.reload_config()
+                return True
+            if msg.get('Text') == 'update update!':
+                threading.Thread(target=self.update, args=()).start()
+                return True
             if '@@' in msg.get('FromUserName'):
-                print('Group!  {}  {}'.format(
-                    msg['Text'], msg['FromUserName']))
+                print(u'Group!  {1} : {0}'.format(
+                    msg['Text'],
+                    nickName if nickName else msg.get('FromUserName')))
                 if msg.get('Text').startswith(self.config['name']):
                     msg['Text'] = msg['Text'][len(self.config['name']):]
                     self.text_reply(msg)
@@ -172,7 +179,10 @@ class wechat_bot(itchat.client):
 
     def cli_input(self):
         while 1:
-            msg = raw_input('')
+            try:
+                msg = raw_input('')
+            except EOFError:
+                exit()
             send_msg = {'Text': msg, 'ToUserName': 'filehelper'}
             self.send(send_msg)
 
