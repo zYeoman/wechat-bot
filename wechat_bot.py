@@ -10,8 +10,8 @@ from pprint import pprint
 
 import logging
 
-_DebugLevel = logging.INFO
-logging.basicConfig(level=logging.INFO)
+_DebugLevel = logging.ERROR
+logging.basicConfig(level=logging.ERROR)
 
 # ToUserName = "filehelper" 文件传输助手
 
@@ -170,7 +170,14 @@ class wechat_bot(itchat.client):
             else:
                 time.sleep(0.3)
 
+    def cli_input(self):
+        while 1:
+            msg = raw_input('')
+            send_msg = {'Text': msg, 'ToUserName': 'filehelper'}
+            self.send(send_msg)
+
 if __name__ == '__main__':
     bot = wechat_bot()
     bot.auto_login()
-    bot.run()
+    threading.Thread(target=bot.run).start()
+    threading.Thread(target=bot.cli_input).start()
