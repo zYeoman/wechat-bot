@@ -12,18 +12,18 @@ import requests
 import json
 
 
-def get_tuling(msg, local='北京市', userid='abcd1234'):
+def get_tuling(msg_string, userid='abcd1234'):
     url = "http://www.tuling123.com/openapi/api"
     query = {"key": "1c38197ddf406d97ac4958a7a47f541b",
-             "info": msg,
-             "loc": local,
+             "info": msg_string,
              "userid": userid}
     result = requests.post(url, data=json.dumps(query)).json()
     return result
 
 
-def get_response(msg, send=None, more='abcd'):
-    response = get_tuling(msg.lower().strip(), more[2:7])
+def get_response(msg, send=None, more=False):
+    response = get_tuling(msg['Text'].lower().strip(),
+                          msg['FromUserName'][2:7])
     content = response["text"]
     return content
 
@@ -31,8 +31,9 @@ def get_response(msg, send=None, more='abcd'):
 def test():
     msg = [u'天气', u'你好', 'askldjf']
     for m in msg:
+        n = {'Text': m, 'FromUserName': '@abcd1234'}
         print(u'test plugin tuling:msg={}'.format(m))
-        if get_response(m):
+        if get_response(n):
             print("OK!")
 
 if __name__ == '__main__':

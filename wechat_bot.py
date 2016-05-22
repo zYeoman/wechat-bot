@@ -91,9 +91,10 @@ class wechat_bot(itchat.client):
                 regex = plugin['regex']
                 r = regex.match(msg['Text'].strip())
                 if r:
-                    response = plugin['module'].get_response(r.string,
-                                                             self.send,
-                                                             msg['FromUserName']
+                    local_msg = msg.copy()
+                    local_msg['Text'] = r.string
+                    response = plugin['module'].get_response(local_msg,
+                                                             self.send
                                                              )
                     self.send({'Text': response,
                                'ToUserName': msg['FromUserName']})

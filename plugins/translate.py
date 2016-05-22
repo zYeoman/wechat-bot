@@ -13,17 +13,17 @@
 import requests
 
 
-def get_iciba(msg):
+def get_iciba(msg_string):
     url = "http://dict-co.iciba.com/api/dictionary.php"
     query = {"key": "E0F0D336AF47D3797C68372A869BDBC5",
-             "w": msg,
+             "w": msg_string,
              "type": "json"}
     result = requests.get(url, params=query).json()
     return result
 
 
 def get_response(msg, send=None, more=False):
-    meanings = get_iciba(msg.lower().strip())
+    meanings = get_iciba(msg['Text'].lower().strip())
     content = meanings["symbols"][0]
     result = u"UK: /{}/; USA: /{}/\n".format(content.get("ph_en", ""),
                                              content.get("ph_am", ""))
@@ -36,8 +36,9 @@ def get_response(msg, send=None, more=False):
 def test():
     msg = ['test', 'over-load', 'askldjf']
     for m in msg:
+        n = {'Text': m}
         print('test plugin translate:msg={}'.format(m))
-        if get_response(m):
+        if get_response(n):
             print("OK!")
 
 if __name__ == '__main__':
