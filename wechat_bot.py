@@ -28,31 +28,15 @@ class response:
         print(self.response + '  OK!')
 
 
-class wechat_bot(itchat.client):
+class wechat_bot(itchat.Core):
     """bot for wechat"""
 
     def __init__(self, local=False):
-        itchat.client.__init__(self)
+        itchat.Core.__init__(self)
         self._config = self.load_config()
         self.user = None
         self.config_mutex = threading.Lock()
         self.local = local
-
-    def get_QR(self, uuid=None):
-        BASE_URL = 'https://login.weixin.qq.com'
-        if uuid is None:
-            uuid = self.uuid
-        url = '%s/qrcode/%s' % (BASE_URL, uuid)
-        r = self.s.get(url, stream=True)
-        QR_DIR = 'QR.jpg'
-        with open(QR_DIR, 'wb') as f:
-            f.write(r.content)
-        try:
-            os.startfile(QR_DIR)
-        except:
-            pass
-        print('\n' + url)
-        return True
 
     @property
     def config(self):
@@ -117,7 +101,9 @@ class wechat_bot(itchat.client):
     def send(self, send_msg):
         text = send_msg['Text']
         toUserName = send_msg['ToUserName']
-        nickName = self.storageClass.find_nickname(toUserName)
+        nickName = self.search_friends(userName=toUserName)
+        if nickName is not None:
+            nickName = nickName['NickName']
         print(u"Send to {1}: {0}".format(
             text, nickName if nickName else toUserName))
         if self.local:
@@ -143,7 +129,9 @@ class wechat_bot(itchat.client):
         if msg.get('ToUserName') == 'filehelper' or \
                 msg.get('FromUserName') == self.user:
             msg['FromUserName'] = 'filehelper'
-        nickName = self.storageClass.find_nickname(msg.get('FromUserName'))
+        nickName = self.search_friends(userName=msg['FromUserName'])
+        if nickName is not None:
+            nickName = nickName['NickName']
         if msg.get('Type') == 'Text':
             print(u'Receive from {1}:{0}'.format(
                 msg.get('Text'),
@@ -172,7 +160,7 @@ class wechat_bot(itchat.client):
         print('Start auto replying')
         while 1:
             if self.storageClass.msgList:
-                msg = self.storageClass.msgList.pop()
+                msg = self.storageClass.msgList.get()
                 self.reply(msg)
             else:
                 time.sleep(0.3)
@@ -180,7 +168,7 @@ class wechat_bot(itchat.client):
     def cli_input(self):
         while 1:
             try:
-                msg = raw_input('')
+                msg = input('input:')
             except EOFError:
                 exit()
             send_msg = {'Text': msg, 'ToUserName': 'filehelper'}
@@ -188,6 +176,6 @@ class wechat_bot(itchat.client):
 
 if __name__ == '__main__':
     bot = wechat_bot()
-    bot.auto_login()
+    bot.auto_login(enableCmdQR=2)
     threading.Thread(target=bot.run).start()
     threading.Thread(target=bot.cli_input).start()
