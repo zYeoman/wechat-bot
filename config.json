@@ -15,11 +15,6 @@
             "response":"Hello!"
         },
         {
-            "name":"googleDrive",
-            "description":"save all file in googleDrive",
-            "type":"file"
-        },
-        {
             "name":"tuling",
             "description":"Tuling bot",
             "type":"response",
