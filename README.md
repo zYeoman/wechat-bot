@@ -32,6 +32,11 @@ A simple wechat-bot based on  [ItChat](https://github.com/littlecodersh/ItChat)
 * Add `.py` script to `./plugins`. The script should have `get_response` and `test` functiongs.
 * Edit `config.json`.
 
+### 插件准则
+* 尽量不要有直接交互型插件。手机微信打字太麻烦
+* 足够的速度
+* 不影响日常交流
+
 ### Basic Plugins
 * sayHello: response to Hello/Hi message, with 'Hello'.
 * translate: translate all single English words.
