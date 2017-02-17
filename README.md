@@ -32,23 +32,18 @@ A simple wechat-bot based on  [ItChat](https://github.com/littlecodersh/ItChat)
 * Add `.py` script to `./plugins`. The script should have `get_response` and `test` functiongs.
 * Edit `config.json`.
 
-### 插件准则
-* 尽量不要有直接交互型插件。手机微信打字太麻烦
-* 足够的速度
-* 不影响日常交流
-
 ### Basic Plugins
 * sayHello: response to Hello/Hi message, with 'Hello'.
 * translate: translate all single English words.
 
-### 已知的bug与期望的feature
-* `Ctrl+C`无法关闭程序, 多线程问题
-* 接收获得不了nickName
-* 群消息和单个消息output两边
+### 已知的 bug 与期望的 feature
+* `Ctrl+C`无法关闭程序，多线程问题
+* 接收获得不了 nickName
+* 群消息和单个消息 output 两边
 * Emoji 输出
-* 新闻等消息排版输出: 参照weixinbot
-* 另外的网页版登录或手机下线的Error发送: 参照weixinbot
+* 新闻等消息排版输出：参照 weixinbot
+* 另外的网页版登录或手机下线的 Error 发送：参照 weixinbot
 
 ### 未来
-* 对指定nickName发送消息
+* 对指定 nickName 发送消息
 * WebUI, 远程控制
